@@ -1,7 +1,33 @@
 {
   "name": "create-node-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "Interactive CLI for scaffolding production-ready Node.js backend applications with Express, Next.js, React, and TanStack, featuring fully configurable modules and project structure.",
+  "keywords": [
+    "cli",
+    "scaffold",
+    "scaffolding",
+    "generator",
+    "boilerplate",
+    "starter",
+    "node",
+    "nodejs",
+    "express",
+    "nextjs",
+    "tanstack",
+    "typescript",
+    "postgres",
+    "postgresql",
+    "mongodb",
+    "drizzle",
+    "prisma",
+    "mongoose",
+    "redis",
+    "docker",
+    "monorepo",
+    "turborepo",
+    "create-app",
+    "project-generator"
+  ],
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsdown --watch",
@@ -10,9 +36,15 @@
   "bin": {
     "create-node-app": "./dist/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "files": [
+    "dist/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nodejsboilerplate/create-node-app.git"
+  },
+  "author": "Nimul Islam Mahin nimulmahin@gmail.com",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@inquirer/prompts": "^8.6.0",
