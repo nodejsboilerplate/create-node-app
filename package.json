@@ -4,7 +4,8 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsdown --watch"
+    "build": "tsdown --watch",
+    "format": "prettier --write \"**/*.{ts,json}\""
   },
   "bin": {
     "create-node-app": "./dist/index.js"
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "eslint": "^10.8.1",
+    "prettier": "^3.9.6",
     "ts-node": "^10.9.2",
     "tsdown": "^0.22.14",
     "typescript": "^7.0.2"

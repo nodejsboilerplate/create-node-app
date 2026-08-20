@@ -19,7 +19,7 @@ try {
   clone_process.stderr.setEncoding("utf8");
 
   clone_process.stdout.on("data", (data) => {
-    console.log("haha",data);
+    console.log("haha", data);
   });
 
   clone_process.stderr.on("data", (data) => {
