@@ -1,0 +1,11 @@
+# Ignore source files
+src/
+# Ignore development-related files
+node_modules/
+*.map 
+*.spec.ts
+tsconfig.json
+.git/
+.gitignore
+.github/
+eslint.config.mjs
