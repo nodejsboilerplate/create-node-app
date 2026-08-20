@@ -1,13 +1,49 @@
-export type AppType =
-  "express" | "node-http" | "express-serverless" | "nextjs" | "tanstack";
-export type RepoStructType = "monolith" | "monorepo";
-export type DatabaseType = "mongodb" | "postgres";
-export type DbStructManagerType = "drizzle" | "prisma" | "mongoose" | "mongodb";
-export type RedisDriverType = "ioredis" | "redis";
-export type RequestLoggerType = "pino" | "morgan";
-export type CodeParadigmType = "oop" | "fp";
+export enum AppType {
+  Express = "express",
+  NodeHttp = "node-http",
+  ExpressServerless = "express-serverless",
+  NextJs = "nextjs",
+  TanStack = "tanstack",
+}
+
+export enum RepoStructType {
+  Monolith = "monolith",
+  Monorepo = "monorepo",
+}
+
+export enum MonorepoProviderType {
+  Turborepo = "turborepo",
+}
+
+export enum DatabaseType {
+  MongoDB = "mongodb",
+  Postgres = "postgres",
+}
+
+export enum DbStructManagerType {
+  Drizzle = "drizzle",
+  Prisma = "prisma",
+  Mongoose = "mongoose",
+  MongoDB = "mongodb",
+}
+
+export enum RedisDriverType {
+  IORedis = "ioredis",
+  Redis = "redis",
+}
+
+export enum RequestLoggerType {
+  Pino = "pino",
+  Morgan = "morgan",
+}
+
+export enum CodeParadigmType {
+  OOP = "oop",
+  FP = "fp",
+}
 
 interface SettingsType {
+  app_name: string;
   app: AppType;
   docker_need: boolean;
   redis_need: boolean;
@@ -17,6 +53,7 @@ interface SettingsType {
   husky_need: boolean;
   commitizen_need: boolean;
   repo_struct: RepoStructType;
+  monorepo_provider: MonorepoProviderType | null;
   prebuilt_auth_need: boolean;
   prebuilt_user_need: boolean;
   prebuilt_reqres_handler_need: boolean;
@@ -27,6 +64,7 @@ interface SettingsType {
   app_rate_limit_need: boolean;
   code_paradigm: CodeParadigmType;
 
+  setAppName(value: string): this;
   setApp(value: AppType): this;
   setDockerNeed(value: boolean): this;
   setRedisNeed(value: boolean): this;
@@ -36,6 +74,7 @@ interface SettingsType {
   setHuskyNeed(value: boolean): this;
   setCommitizenNeed(value: boolean): this;
   setRepoStruct(value: RepoStructType): this;
+  setMonorepoProvider(value: MonorepoProviderType): this;
   setPrebuiltAuthNeed(value: boolean): this;
   setPrebuiltUserNeed(value: boolean): this;
   setPrebuiltReqresHandlerNeed(value: boolean): this;
@@ -45,27 +84,35 @@ interface SettingsType {
   setRequestLoggerType(value: RequestLoggerType): this;
   setAppRateLimitNeed(value: boolean): this;
   setCodeParadigm(value: CodeParadigmType): this;
+  getSettings(): any;
 }
 
 export class Settings implements SettingsType {
-  app: AppType = "express";
+  app_name: string = "myapp";
+  app: AppType = AppType.Express;
   docker_need: boolean = false;
   redis_need: boolean = true;
-  redis_driver: RedisDriverType = "redis";
-  database: DatabaseType = "postgres";
-  db_struct_manager: DbStructManagerType = "drizzle";
+  redis_driver: RedisDriverType = RedisDriverType.Redis;
+  database: DatabaseType = DatabaseType.Postgres;
+  db_struct_manager: DbStructManagerType = DbStructManagerType.Drizzle;
   husky_need: boolean = false;
   commitizen_need: boolean = false;
-  repo_struct: RepoStructType = "monolith";
+  repo_struct: RepoStructType = RepoStructType.Monolith;
+  monorepo_provider: MonorepoProviderType | null = null;
   prebuilt_auth_need: boolean = false;
   prebuilt_user_need: boolean = false;
   prebuilt_reqres_handler_need: boolean = true;
   prebuilt_async_handler_need: boolean = false;
   prebuilt_error_handler_need: boolean = true;
   request_logger_need: boolean = true;
-  request_logger_type: RequestLoggerType = "pino";
+  request_logger_type: RequestLoggerType = RequestLoggerType.Pino;
   app_rate_limit_need: boolean = true;
-  code_paradigm: CodeParadigmType = "oop";
+  code_paradigm: CodeParadigmType = CodeParadigmType.OOP;
+
+  setAppName(value: string): this {
+    this.app_name = value;
+    return this;
+  }
 
   setApp(value: AppType): this {
     this.app = value;
@@ -112,6 +159,11 @@ export class Settings implements SettingsType {
     return this;
   }
 
+  setMonorepoProvider(value: MonorepoProviderType): this {
+    this.monorepo_provider = value;
+    return this;
+  }
+
   setPrebuiltAuthNeed(value: boolean): this {
     this.prebuilt_auth_need = value;
     return this;
@@ -155,5 +207,30 @@ export class Settings implements SettingsType {
   setCodeParadigm(value: CodeParadigmType): this {
     this.code_paradigm = value;
     return this;
+  }
+
+  getSettings() {
+    return {
+      app_name: this.app_name,
+      app: this.app,
+      docker_need: this.docker_need,
+      redis_need: this.redis_need,
+      redis_driver: this.redis_driver,
+      database: this.database,
+      db_struct_manager: this.db_struct_manager,
+      husky_need: this.husky_need,
+      commitizen_need: this.commitizen_need,
+      repo_struct: this.repo_struct,
+      monorepo_provider: this.monorepo_provider,
+      prebuilt_auth_need: this.prebuilt_auth_need,
+      prebuilt_user_need: this.prebuilt_user_need,
+      prebuilt_reqres_handler_need: this.prebuilt_reqres_handler_need,
+      prebuilt_async_handler_need: this.prebuilt_async_handler_need,
+      prebuilt_error_handler_need: this.prebuilt_error_handler_need,
+      request_logger_need: this.request_logger_need,
+      request_logger_type: this.request_logger_type,
+      app_rate_limit_need: this.app_rate_limit_need,
+      code_paradigm: this.code_paradigm,
+    };
   }
 }
