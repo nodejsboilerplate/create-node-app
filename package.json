@@ -1,5 +1,5 @@
 {
-  "name": "create-nodejs-app",
+  "name": "create-node-app@latest",
   "version": "1.0.0",
   "description": "Interactive CLI for scaffolding production-ready Node.js backend applications with Express, Next.js, React, and TanStack, featuring fully configurable modules and project structure.",
   "keywords": [
@@ -34,7 +34,7 @@
     "format": "prettier --write \"**/*.{ts,json}\""
   },
   "bin": {
-    "create-nodejs-app": "./dist/index.js"
+    "create-node-app@latest": "./dist/index.js"
   },
   "files": [
     "dist/"
