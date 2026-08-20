@@ -34,7 +34,7 @@
     "format": "prettier --write \"**/*.{ts,json}\""
   },
   "bin": {
-    "@npmmahin/create-node-app": "./dist/index.js"
+    "create-node-app": "./dist/index.js"
   },
   "files": [
     "dist/"

@@ -55,10 +55,47 @@ if (settings.repo_struct === RepoStructType.Monorepo) {
 
 settings.setAppName(
   await input({
+
     message:
       settings.repo_struct === RepoStructType.Monolith
         ? "Enter app name:"
         : "Enter apps repository name:",
+    validate: (value: string) => {
+      const trimmed = value.trim()
+
+      if (trimmed.length === 0) {
+        return "Name cannot be empty"
+      }
+
+      // Disallow any whitespace (spaces, tabs, etc.) anywhere in the name
+      if (/\s/.test(trimmed)) {
+        return "Name cannot contain spaces"
+      }
+
+      // Disallow reserved/invalid filesystem characters 
+      const invalidChars = /[<>:"/\\|?*\x00-\x1F]/
+      if (invalidChars.test(trimmed)) {
+        return "Name contains invalid characters (< > : \" / \\ | ? *)"
+      }
+
+      // Disallow leading/trailing dots
+      if (/^\.|\.$/.test(trimmed)) {
+        return "Name cannot start or end with a dot"
+      }
+
+      // Disallow reserved Windows names
+      const reservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])$/i
+      if (reservedNames.test(trimmed)) {
+        return "This name is reserved by the operating system"
+      }
+
+      // Enforce reasonable length
+      if (trimmed.length > 214) {
+        return "Name is too long"
+      }
+
+      return true
+    },
   })
 );
 
@@ -100,14 +137,14 @@ settings.setDatabase(get_database);
 const dbStructManagerChoices =
   get_database === DatabaseType.MongoDB
     ? [
-        { name: "Mongoose", value: DbStructManagerType.Mongoose },
-        { name: "MongoDB (raw driver)", value: DbStructManagerType.MongoDB },
-        { name: "Prisma", value: DbStructManagerType.Prisma },
-      ]
+      { name: "Mongoose", value: DbStructManagerType.Mongoose },
+      { name: "MongoDB (raw driver)", value: DbStructManagerType.MongoDB },
+      { name: "Prisma", value: DbStructManagerType.Prisma },
+    ]
     : [
-        { name: "Drizzle", value: DbStructManagerType.Drizzle },
-        { name: "Prisma", value: DbStructManagerType.Prisma },
-      ];
+      { name: "Drizzle", value: DbStructManagerType.Drizzle },
+      { name: "Prisma", value: DbStructManagerType.Prisma },
+    ];
 
 const get_db_struct_manager = await select({
   message: "Select ORM/ODM/driver:",
