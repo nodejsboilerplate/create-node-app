@@ -2,25 +2,20 @@
 
 import { spawn } from "child_process";
 import { Octokit } from "@octokit/core";
-import {
-  Settings,
-  type SettingsType,
-} from "./settings.service";
+import { Settings, type SettingsType } from "./settings.service";
 import { TEMPLATES } from "./templates";
 import { select, input } from "@inquirer/prompts";
+import crypto from "node:crypto";
 import {
-  AppNameAndType,
+  AppNameAndRepo,
+  AppTypeSetup,
   CodeParadigmSetup,
   CodeQualitySetup,
   DatabaseSetup,
-  DockerSetup,
   DocsAndExtraSetup,
   GitTooling,
   LanguageSetup,
-  LoggingSetup,
   PrebuiltModulesSetup,
-  RateLimitSetup,
-  RedisSetup,
 } from "./modules";
 
 const settings = new Settings();
@@ -71,66 +66,6 @@ const printTemplateHighlights = (name: string, highlights: string[]) => {
   console.log("");
 };
 
-const printFriendlySummary = (s: SettingsType) => {
-  console.log(`\nHere's what "${s.app_name}" is getting:\n`);
-
-  console.log(`  Project`);
-  console.log(
-    `    • App type: ${s.app}${s.typescript_need ? " (TypeScript)" : ""}`
-  );
-  console.log(
-    `    • Structure: ${s.repo_struct}${
-      s.monorepo_provider ? ` (${s.monorepo_provider})` : ""
-    }`
-  );
-  console.log(`    • Docker: ${s.docker_need ? "yes" : "no"}`);
-
-  console.log(`  Data`);
-  console.log(`    • Database: ${s.database} (${s.db_struct_manager})`);
-  console.log(
-    `    • Redis: ${s.redis_need ? `yes (${s.redis_driver})` : "no"}`
-  );
-
-  console.log(`  Modules`);
-  console.log(
-    `    • Auth: ${s.prebuilt_auth_need ? "included" : "not included"}`
-  );
-  console.log(
-    `    • User module: ${s.prebuilt_user_need ? "included" : "not included"}`
-  );
-  console.log(
-    `    • Monitoring: ${
-      s.monitoring_need
-        ? s.automate_monitoring_setup
-          ? "yes, auto-configured"
-          : "yes, scaffolded only"
-        : "no"
-    }`
-  );
-
-  console.log(`  Quality`);
-  console.log(
-    `    • Linting/formatting: ${
-      [s.eslint_need && "ESLint", s.prettier_need && "Prettier"]
-        .filter(Boolean)
-        .join(", ") || "none"
-    }`
-  );
-  console.log(`    • Tests: ${s.unit_tester_need ? "yes" : "no"}`);
-  console.log(
-    `    • Git hooks/CI: ${s.which_git_workflows.length > 0 ? "configured" : "none"}`
-  );
-  console.log(
-    `    • API docs: ${
-      s.openapi_spec_need
-        ? `OpenApi${s.swagger_ui_need ? " + interactive UI" : " spec only"}`
-        : s.openapi_spec_need
-          ? "OpenAPI spec"
-          : "none"
-    }`
-  );
-};
-
 /* -------------------------------------------------------------------------- */
 /*                          Step 0 — template or custom                       */
 /* -------------------------------------------------------------------------- */
@@ -166,14 +101,8 @@ if (get_setup_mode === "template") {
 
   const chosen_template = TEMPLATES.find((t) => t.id === chosen_template_id)!;
 
-  settings.setAppName(
-    await input({
-      message: "Enter app name:",
-      validate: validateAppName,
-    })
-  );
-
   settings.applyTemplate(chosen_template.settings);
+  await AppNameAndRepo(settings, validateAppName);
 
   printTemplateHighlights(chosen_template.name, chosen_template.highlights);
 } else {
@@ -182,19 +111,16 @@ if (get_setup_mode === "template") {
   /* ------------------------------------------------------------------------ */
 
   /* ------------------------------- App name & type ------------------------ */
-  await AppNameAndType(settings, validateAppName);
+  await AppNameAndRepo(settings, validateAppName);
+
+  await AppTypeSetup(settings);
 
   /* ---------------------------------- Language ----------------------------- */
   await LanguageSetup(settings);
 
-  /* ---------------------------------- Docker -------------------------------- */
-  await DockerSetup(settings);
   /* --------------------------------- Database ------------------------------- */
   await DatabaseSetup(settings);
 
-  /* ---------------------------------- Redis --------------------------------- */
-
-  await RedisSetup(settings);
   /* ------------------------------ Code quality ------------------------------ */
   await CodeQualitySetup(settings);
 
@@ -204,12 +130,6 @@ if (get_setup_mode === "template") {
   /* ----------------------------- Prebuilt modules ---------------------------- */
   await PrebuiltModulesSetup(settings);
 
-  /* --------------------------------- Logging -------------------------------- */
-  await LoggingSetup(settings);
-
-  /* ------------------------------- Rate limiting ----------------------------- */
-
-  await RateLimitSetup(settings);
   /* ------------------------------- Code paradigm ----------------------------- */
 
   await CodeParadigmSetup(settings);
@@ -221,8 +141,20 @@ if (get_setup_mode === "template") {
 /*                                   Result                                   */
 /* -------------------------------------------------------------------------- */
 const finalSettings = settings.getSettings();
-printFriendlySummary(finalSettings);
-console.log(settings.getSettings());
+console.log(finalSettings);
+
+let keyArr: string[] = [];
+
+Object.entries(finalSettings).map(([key, value]) => {
+  if (key !== "app_name") {
+    keyArr.push(String(value));
+  }
+});
+
+const key = keyArr.join("");
+
+const repo_key = crypto.createHash("sha256").update(key).digest("hex");
+console.log(repo_key);
 
 let REPO_NAME: string;
 

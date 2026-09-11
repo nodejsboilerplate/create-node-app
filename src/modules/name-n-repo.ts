@@ -1,12 +1,11 @@
 import {
-  AppType,
   MonorepoProviderType,
   RepoStructType,
   type Settings,
 } from "@/settings.service";
 import { input, select } from "@inquirer/prompts";
 
-export const AppNameAndType = async (
+export const AppNameAndRepo = async (
   settings: Settings,
   validateAppName: (data: string) => boolean | string
 ) => {
@@ -52,16 +51,5 @@ export const AppNameAndType = async (
     })
   );
 
-  const get_app = await select({
-    message: "Select app type:",
-    choices: [
-      { name: "Express", value: AppType.Express },
-      { name: "Node HTTP", value: AppType.NodeHttp },
-      { name: "Express Serverless", value: AppType.ExpressServerless },
-      { name: "Next.js", value: AppType.NextJs },
-      { name: "TanStack", value: AppType.TanStack },
-    ],
-    default: AppType.Express,
-  });
-  settings.setApp(get_app);
+
 };
