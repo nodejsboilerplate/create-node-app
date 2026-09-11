@@ -3,273 +3,226 @@
 import { spawn } from "child_process";
 import { Octokit } from "@octokit/core";
 import {
-  AppType,
-  CodeParadigmType,
-  DatabaseType,
-  DbStructManagerType,
-  MonorepoProviderType,
-  RedisDriverType,
-  RepoStructType,
-  RequestLoggerType,
   Settings,
+  type SettingsType,
 } from "./settings.service";
-import { select, confirm, input } from "@inquirer/prompts";
+import { TEMPLATES } from "./templates";
+import { select, input } from "@inquirer/prompts";
+import {
+  AppNameAndType,
+  CodeParadigmSetup,
+  CodeQualitySetup,
+  DatabaseSetup,
+  DockerSetup,
+  DocsAndExtraSetup,
+  GitTooling,
+  LanguageSetup,
+  LoggingSetup,
+  PrebuiltModulesSetup,
+  RateLimitSetup,
+  RedisSetup,
+} from "./modules";
 
 const settings = new Settings();
 const octokit = new Octokit();
 
-/* -------------------------------------------------------------------------- */
-/*                                App name & type                             */
-/* -------------------------------------------------------------------------- */
-const get_repo_type = await select({
-  message: "Select a repository structure:",
-  choices: [
-    {
-      name: "Monolith",
-      value: RepoStructType.Monolith,
-      description: "Single deployable app, one codebase",
-    },
-    {
-      name: "Monorepo",
-      value: RepoStructType.Monorepo,
-      description: "Multiple apps/packages in one repo",
-    },
-  ],
-  default: RepoStructType.Monolith,
-});
-settings.setRepoStruct(get_repo_type);
+const validateAppName = (value: string) => {
+  const trimmed = value.trim();
 
-if (settings.repo_struct === RepoStructType.Monorepo) {
-  const get_monorepo_provider = await select({
-    message: "Select monorepo provider:",
-    choices: [
-      { name: "None", value: null },
-      { name: "Turborepo", value: MonorepoProviderType.Turborepo },
-    ],
-    default: null,
-  });
-  if (get_monorepo_provider) {
-    settings.setMonorepoProvider(get_monorepo_provider);
+  if (trimmed.length === 0) {
+    return "Name cannot be empty";
   }
-}
 
-settings.setAppName(
-  await input({
+  // Disallow any whitespace (spaces, tabs, etc.) anywhere in the name
+  if (/\s/.test(trimmed)) {
+    return "Name cannot contain spaces";
+  }
 
-    message:
-      settings.repo_struct === RepoStructType.Monolith
-        ? "Enter app name:"
-        : "Enter apps repository name:",
-    validate: (value: string) => {
-      const trimmed = value.trim()
+  // Disallow reserved/invalid filesystem characters
+  const invalidChars = /[<>:"/\\|?*\x00-\x1F]/;
+  if (invalidChars.test(trimmed)) {
+    return 'Name contains invalid characters (< > : " / \\ | ? *)';
+  }
 
-      if (trimmed.length === 0) {
-        return "Name cannot be empty"
-      }
+  // Disallow leading/trailing dots
+  if (/^\.|\.$/.test(trimmed)) {
+    return "Name cannot start or end with a dot";
+  }
 
-      // Disallow any whitespace (spaces, tabs, etc.) anywhere in the name
-      if (/\s/.test(trimmed)) {
-        return "Name cannot contain spaces"
-      }
+  // Disallow reserved Windows names
+  const reservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])$/i;
+  if (reservedNames.test(trimmed)) {
+    return "This name is reserved by the operating system";
+  }
 
-      // Disallow reserved/invalid filesystem characters 
-      const invalidChars = /[<>:"/\\|?*\x00-\x1F]/
-      if (invalidChars.test(trimmed)) {
-        return "Name contains invalid characters (< > : \" / \\ | ? *)"
-      }
+  // Enforce reasonable length
+  if (trimmed.length > 214) {
+    return "Name is too long";
+  }
 
-      // Disallow leading/trailing dots
-      if (/^\.|\.$/.test(trimmed)) {
-        return "Name cannot start or end with a dot"
-      }
+  return true;
+};
 
-      // Disallow reserved Windows names
-      const reservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])$/i
-      if (reservedNames.test(trimmed)) {
-        return "This name is reserved by the operating system"
-      }
+const printTemplateHighlights = (name: string, highlights: string[]) => {
+  console.log(`\n✔ ${name}\n`);
+  for (const line of highlights) {
+    console.log(`  • ${line}`);
+  }
+  console.log("");
+};
 
-      // Enforce reasonable length
-      if (trimmed.length > 214) {
-        return "Name is too long"
-      }
+const printFriendlySummary = (s: SettingsType) => {
+  console.log(`\nHere's what "${s.app_name}" is getting:\n`);
 
-      return true
+  console.log(`  Project`);
+  console.log(
+    `    • App type: ${s.app}${s.typescript_need ? " (TypeScript)" : ""}`
+  );
+  console.log(
+    `    • Structure: ${s.repo_struct}${
+      s.monorepo_provider ? ` (${s.monorepo_provider})` : ""
+    }`
+  );
+  console.log(`    • Docker: ${s.docker_need ? "yes" : "no"}`);
+
+  console.log(`  Data`);
+  console.log(`    • Database: ${s.database} (${s.db_struct_manager})`);
+  console.log(
+    `    • Redis: ${s.redis_need ? `yes (${s.redis_driver})` : "no"}`
+  );
+
+  console.log(`  Modules`);
+  console.log(
+    `    • Auth: ${s.prebuilt_auth_need ? "included" : "not included"}`
+  );
+  console.log(
+    `    • User module: ${s.prebuilt_user_need ? "included" : "not included"}`
+  );
+  console.log(
+    `    • Monitoring: ${
+      s.monitoring_need
+        ? s.automate_monitoring_setup
+          ? "yes, auto-configured"
+          : "yes, scaffolded only"
+        : "no"
+    }`
+  );
+
+  console.log(`  Quality`);
+  console.log(
+    `    • Linting/formatting: ${
+      [s.eslint_need && "ESLint", s.prettier_need && "Prettier"]
+        .filter(Boolean)
+        .join(", ") || "none"
+    }`
+  );
+  console.log(`    • Tests: ${s.unit_tester_need ? "yes" : "no"}`);
+  console.log(
+    `    • Git hooks/CI: ${s.which_git_workflows.length > 0 ? "configured" : "none"}`
+  );
+  console.log(
+    `    • API docs: ${
+      s.openapi_spec_need
+        ? `OpenApi${s.swagger_ui_need ? " + interactive UI" : " spec only"}`
+        : s.openapi_spec_need
+          ? "OpenAPI spec"
+          : "none"
+    }`
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*                          Step 0 — template or custom                       */
+/* -------------------------------------------------------------------------- */
+const get_setup_mode = await select({
+  message: "How do you want to set up your project?",
+  choices: [
+    {
+      name: "Use a ready-made template",
+      value: "template",
+      description: "Pick a preconfigured stack, no questions asked",
     },
-  })
-);
-
-const get_app = await select({
-  message: "Select app type:",
-  choices: [
-    { name: "Express", value: AppType.Express },
-    { name: "Node HTTP", value: AppType.NodeHttp },
-    { name: "Express Serverless", value: AppType.ExpressServerless },
-    { name: "Next.js", value: AppType.NextJs },
-    { name: "TanStack", value: AppType.TanStack },
+    {
+      name: "Customize settings myself",
+      value: "custom",
+      description: "Answer questions to build your own configuration",
+    },
   ],
-  default: AppType.Express,
+  default: "template",
 });
-settings.setApp(get_app);
 
-/* -------------------------------------------------------------------------- */
-/*                                   Docker                                   */
-/* -------------------------------------------------------------------------- */
-const get_docker_need = await confirm({
-  message: "Do you need Docker setup?",
-  default: false,
-});
-settings.setDockerNeed(get_docker_need);
-
-/* -------------------------------------------------------------------------- */
-/*                                   Database                                 */
-/* -------------------------------------------------------------------------- */
-const get_database = await select({
-  message: "Select database:",
-  choices: [
-    { name: "MongoDB", value: DatabaseType.MongoDB },
-    { name: "PostgreSQL", value: DatabaseType.Postgres },
-  ],
-  default: DatabaseType.Postgres,
-});
-settings.setDatabase(get_database);
-
-const dbStructManagerChoices =
-  get_database === DatabaseType.MongoDB
-    ? [
-      { name: "Mongoose", value: DbStructManagerType.Mongoose },
-      { name: "MongoDB (raw driver)", value: DbStructManagerType.MongoDB },
-      { name: "Prisma", value: DbStructManagerType.Prisma },
-    ]
-    : [
-      { name: "Drizzle", value: DbStructManagerType.Drizzle },
-      { name: "Prisma", value: DbStructManagerType.Prisma },
-    ];
-
-const get_db_struct_manager = await select({
-  message: "Select ORM/ODM/driver:",
-  choices: dbStructManagerChoices,
-  default: dbStructManagerChoices[0]?.value,
-});
-settings.setDbStructManager(get_db_struct_manager);
-
-/* -------------------------------------------------------------------------- */
-/*                                   Redis                                    */
-/* -------------------------------------------------------------------------- */
-const get_redis_need = await confirm({
-  message: "Do you need Redis?",
-  default: true,
-});
-settings.setRedisNeed(get_redis_need);
-
-if (settings.redis_need) {
-  const get_redis_driver = await select({
-    message: "Select Redis driver:",
-    choices: [
-      { name: "ioredis", value: RedisDriverType.IORedis },
-      { name: "redis", value: RedisDriverType.Redis },
-    ],
-    default: RedisDriverType.Redis,
+if (get_setup_mode === "template") {
+  /* ------------------------------------------------------------------------ */
+  /*                              Template flow                               */
+  /* ------------------------------------------------------------------------ */
+  const chosen_template_id = await select({
+    message: "Select a template:",
+    choices: TEMPLATES.map((template) => ({
+      name: template.name,
+      value: template.id,
+      description: template.description,
+    })),
   });
-  settings.setRedisDriver(get_redis_driver);
+
+  const chosen_template = TEMPLATES.find((t) => t.id === chosen_template_id)!;
+
+  settings.setAppName(
+    await input({
+      message: "Enter app name:",
+      validate: validateAppName,
+    })
+  );
+
+  settings.applyTemplate(chosen_template.settings);
+
+  printTemplateHighlights(chosen_template.name, chosen_template.highlights);
+} else {
+  /* ------------------------------------------------------------------------ */
+  /*                              Customize flow                              */
+  /* ------------------------------------------------------------------------ */
+
+  /* ------------------------------- App name & type ------------------------ */
+  await AppNameAndType(settings, validateAppName);
+
+  /* ---------------------------------- Language ----------------------------- */
+  await LanguageSetup(settings);
+
+  /* ---------------------------------- Docker -------------------------------- */
+  await DockerSetup(settings);
+  /* --------------------------------- Database ------------------------------- */
+  await DatabaseSetup(settings);
+
+  /* ---------------------------------- Redis --------------------------------- */
+
+  await RedisSetup(settings);
+  /* ------------------------------ Code quality ------------------------------ */
+  await CodeQualitySetup(settings);
+
+  /* ------------------------------- Git tooling ------------------------------ */
+  await GitTooling(settings);
+
+  /* ----------------------------- Prebuilt modules ---------------------------- */
+  await PrebuiltModulesSetup(settings);
+
+  /* --------------------------------- Logging -------------------------------- */
+  await LoggingSetup(settings);
+
+  /* ------------------------------- Rate limiting ----------------------------- */
+
+  await RateLimitSetup(settings);
+  /* ------------------------------- Code paradigm ----------------------------- */
+
+  await CodeParadigmSetup(settings);
+  /* ------------------------------ Docs & extras ------------------------------ */
+  await DocsAndExtraSetup(settings);
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                   Tooling                                  */
-/* -------------------------------------------------------------------------- */
-const get_husky_need = await confirm({
-  message: "Do you need Husky (git hooks)?",
-  default: false,
-});
-settings.setHuskyNeed(get_husky_need);
-
-const get_commitizen_need = await confirm({
-  message: "Do you need Commitizen (conventional commits)?",
-  default: false,
-});
-settings.setCommitizenNeed(get_commitizen_need);
-
-/* -------------------------------------------------------------------------- */
-/*                              Prebuilt Modules                              */
-/* -------------------------------------------------------------------------- */
-const get_prebuilt_auth_need = await confirm({
-  message: "Include prebuilt auth module?",
-  default: false,
-});
-settings.setPrebuiltAuthNeed(get_prebuilt_auth_need);
-
-const get_prebuilt_user_need = await confirm({
-  message: "Include prebuilt user module?",
-  default: false,
-});
-settings.setPrebuiltUserNeed(get_prebuilt_user_need);
-
-const get_prebuilt_reqres_handler_need = await confirm({
-  message: "Include prebuilt request/response handler?",
-  default: true,
-});
-settings.setPrebuiltReqresHandlerNeed(get_prebuilt_reqres_handler_need);
-
-const get_prebuilt_async_handler_need = await confirm({
-  message: "Include prebuilt async handler wrapper?",
-  default: false,
-});
-settings.setPrebuiltAsyncHandlerNeed(get_prebuilt_async_handler_need);
-
-const get_prebuilt_error_handler_need = await confirm({
-  message: "Include prebuilt error handler?",
-  default: true,
-});
-settings.setPrebuiltErrorHandlerNeed(get_prebuilt_error_handler_need);
-
-/* -------------------------------------------------------------------------- */
-/*                                   Logging                                  */
-/* -------------------------------------------------------------------------- */
-const get_request_logger_need = await confirm({
-  message: "Do you need request logging?",
-  default: true,
-});
-settings.setRequestLoggerNeed(get_request_logger_need);
-
-if (settings.request_logger_need) {
-  const get_request_logger_type = await select({
-    message: "Select request logger:",
-    choices: [
-      { name: "Pino", value: RequestLoggerType.Pino },
-      { name: "Morgan", value: RequestLoggerType.Morgan },
-    ],
-    default: RequestLoggerType.Pino,
-  });
-  settings.setRequestLoggerType(get_request_logger_type);
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Rate limiting                               */
-/* -------------------------------------------------------------------------- */
-const get_app_rate_limit_need = await confirm({
-  message: "Enable app rate limiting?",
-  default: true,
-});
-settings.setAppRateLimitNeed(get_app_rate_limit_need);
-
-/* -------------------------------------------------------------------------- */
-/*                                Code paradigm                               */
-/* -------------------------------------------------------------------------- */
-const get_code_paradigm = await select({
-  message: "Select code paradigm:",
-  choices: [
-    { name: "OOP", value: CodeParadigmType.OOP },
-    { name: "FP", value: CodeParadigmType.FP },
-  ],
-  default: CodeParadigmType.OOP,
-});
-settings.setCodeParadigm(get_code_paradigm);
 
 /* -------------------------------------------------------------------------- */
 /*                                   Result                                   */
 /* -------------------------------------------------------------------------- */
 const finalSettings = settings.getSettings();
-console.log(finalSettings);
+printFriendlySummary(finalSettings);
+console.log(settings.getSettings());
 
 let REPO_NAME: string;
 
