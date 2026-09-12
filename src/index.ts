@@ -17,6 +17,8 @@ import {
   LanguageSetup,
   PrebuiltModulesSetup,
 } from "./modules";
+import path from "node:path";
+import { insertAfterBlock, insertInsideBlock } from "./blockInserter";
 
 const settings = new Settings();
 const octokit = new Octokit();
@@ -157,6 +159,73 @@ const repo_key = crypto.createHash("sha256").update(key).digest("hex");
 console.log(repo_key);
 
 let REPO_NAME: string;
+
+async function run() {
+  const targetDir = path.resolve(process.cwd(), "cloned");
+
+  try {
+    const { data } = await octokit.request("GET /repos/{owner}/{repo}", {
+      owner: "gitmahin",
+      repo: "crisis-desk-ai",
+    });
+
+    const clone_process = spawn("git", ["clone", data.clone_url, targetDir]);
+
+    clone_process.stdout.setEncoding("utf8");
+    clone_process.stderr.setEncoding("utf8");
+    clone_process.stdout.on("data", (d) => console.log("clone:", d));
+    clone_process.stderr.on("data", (d) => console.log("clone err:", d));
+
+    clone_process.on("close", (code) => {
+      if (code !== 0) {
+        console.error("Cloning failed. Aborting.");
+        process.exit(1);
+      }
+
+      console.log("Installing dependencies...");
+      const install_deps = spawn("pnpm", ["i"], { cwd: targetDir });
+
+      install_deps.stdout.on("data", (d) => console.log(d.toString()));
+      install_deps.stderr.on("data", (d) => console.error(d.toString()));
+
+      install_deps.on("close", (installCode) => {
+        if (installCode !== 0) {
+          console.error("Install failed. Skipping next step.");
+          process.exit(1);
+        }
+
+        console.log("Setting up files...");
+
+        try {
+          // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
+          //   label: "Address",
+          // });
+
+          // insertInsideBlock(REPO_FILE, anchors.methodBody("CreateNewUserAndProfile"), "console.log('x');", {
+          //   indentSize: 4,
+          // });
+
+          // insertAfterBlock(REPO_FILE, anchors.methodBody("GetUserIdByEmail"), newMethodCodeString, {
+          //   label: "New method",
+          // });
+
+          // insertInsideBlock(CONFIG_FILE, anchors.objectLiteral("config"), `newProp: "value",`, {
+          //   ensureTrailingComma: true,
+          // });
+          console.log("Done.");
+        } catch (err: any) {
+          console.error(err.message);
+          process.exit(1);
+        }
+      });
+    });
+  } catch (error: any) {
+    console.error(error.message);
+    process.exit(1);
+  }
+}
+
+run();
 
 // try {
 //   const { data } = await octokit.request("GET /repos/{owner}/{repo}", {
