@@ -25,6 +25,7 @@ import {
 import path from "node:path";
 import { insertAfterBlock, insertInsideBlock } from "./blockInserter";
 import { setupDatabaseModule } from "./Setupdatabasemodule";
+import { setupServicesModule } from "./Setupservicesmodule";
 
 const settings = new Settings();
 const octokit = new Octokit();
@@ -208,7 +209,7 @@ let repo_clone_url: string = ""
 
         try {
           setupDatabaseModule(settings, targetDir);
-
+      setupServicesModule(settings, targetDir);
           // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
           //   label: "Address",
           // });
