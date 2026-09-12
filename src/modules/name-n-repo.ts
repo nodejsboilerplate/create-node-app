@@ -50,6 +50,4 @@ export const AppNameAndRepo = async (
       validate: validateAppName,
     })
   );
-
-
 };

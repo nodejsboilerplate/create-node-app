@@ -14,12 +14,22 @@ export function resolveVariantFolder(settings: Settings): string | null {
   return null;
 }
 
-export function sparseCloneRepo(repoUrl: string, sparsePath: string, tempDir: string) {
+export function sparseCloneRepo(
+  repoUrl: string,
+  sparsePath: string,
+  tempDir: string
+) {
   fs.mkdirSync(tempDir, { recursive: true });
 
   execSync("git init", { cwd: tempDir, stdio: "inherit" });
-  execSync(`git remote add -f origin ${repoUrl}`, { cwd: tempDir, stdio: "inherit" });
-  execSync("git config core.sparseCheckout true", { cwd: tempDir, stdio: "inherit" });
+  execSync(`git remote add -f origin ${repoUrl}`, {
+    cwd: tempDir,
+    stdio: "inherit",
+  });
+  execSync("git config core.sparseCheckout true", {
+    cwd: tempDir,
+    stdio: "inherit",
+  });
 
   fs.writeFileSync(
     path.join(tempDir, ".git", "info", "sparse-checkout"),

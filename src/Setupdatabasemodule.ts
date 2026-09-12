@@ -11,7 +11,9 @@ export function setupDatabaseModule(settings: Settings, targetDir: string) {
   if (!settings.prebuilt_user_need) {
     if (fs.existsSync(destDatabaseDir)) {
       fs.rmSync(destDatabaseDir, { recursive: true, force: true });
-      console.log("Prebuilt user module not selected — removed database folder.");
+      console.log(
+        "Prebuilt user module not selected — removed database folder."
+      );
     }
     return;
   }
@@ -19,7 +21,9 @@ export function setupDatabaseModule(settings: Settings, targetDir: string) {
   const variantFolder = resolveVariantFolder(settings);
 
   if (variantFolder === null) {
-    console.log("Full table set selected — using default cloned database setup, skipping override.");
+    console.log(
+      "Full table set selected — using default cloned database setup, skipping override."
+    );
     return;
   }
 
@@ -45,5 +49,7 @@ export function setupDatabaseModule(settings: Settings, targetDir: string) {
   fs.cpSync(sparseDatabaseDir, destDatabaseDir, { recursive: true });
   fs.rmSync(tempDir, { recursive: true, force: true });
 
-  console.log(`Database module (${variantFolder}) installed at ${destDatabaseDir}`);
+  console.log(
+    `Database module (${variantFolder}) installed at ${destDatabaseDir}`
+  );
 }

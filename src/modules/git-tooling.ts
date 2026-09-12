@@ -1,4 +1,4 @@
-import {  Settings } from "@/settings.service";
+import { Settings } from "@/settings.service";
 import { confirm } from "@inquirer/prompts";
 
 export const GitTooling = async (settings: Settings) => {
@@ -7,5 +7,4 @@ export const GitTooling = async (settings: Settings) => {
     default: false,
   });
   settings.setHuskyNeed(get_husky_need);
-
 };

@@ -19,7 +19,11 @@ const expressDrizzlePostgres: Template = {
   id: "express-drizzle-postgres",
   name: "Express + Drizzle + Postgres",
   description: "Classic Express monolith with Postgres via Drizzle ORM.",
-  highlights: ["Express + Postgres", "Drizzle ORM", "Auth & user modules included"],
+  highlights: [
+    "Express + Postgres",
+    "Drizzle ORM",
+    "Auth & user modules included",
+  ],
   settings: {
     app: AppType.Express,
     database: DatabaseType.Postgres,
@@ -43,7 +47,11 @@ const expressPrismaPostgres: Template = {
   id: "express-prisma-postgres",
   name: "Express + Prisma + Postgres",
   description: "Express monolith with Postgres via Prisma ORM.",
-  highlights: ["Express + Postgres", "Prisma ORM", "Auth & user modules included"],
+  highlights: [
+    "Express + Postgres",
+    "Prisma ORM",
+    "Auth & user modules included",
+  ],
   settings: {
     app: AppType.Express,
     database: DatabaseType.Postgres,
@@ -115,7 +123,10 @@ const expressServerlessMongo: Template = {
   id: "express-serverless-mongo",
   name: "Serverless Express + MongoDB",
   description: "Express-serverless deployment with raw MongoDB driver.",
-  highlights: ["Deploys as serverless functions", "Raw MongoDB driver (no ODM)"],
+  highlights: [
+    "Deploys as serverless functions",
+    "Raw MongoDB driver (no ODM)",
+  ],
   settings: {
     app: AppType.ExpressServerless,
     database: DatabaseType.MongoDB,
@@ -139,7 +150,11 @@ const expressMongo: Template = {
   id: "express-mongo",
   name: "Express + MongoDB",
   description: "Express monolith with MongoDB via Mongoose.",
-  highlights: ["Express + MongoDB", "Mongoose ODM", "Auth & user modules included"],
+  highlights: [
+    "Express + MongoDB",
+    "Mongoose ODM",
+    "Auth & user modules included",
+  ],
   settings: {
     app: AppType.Express,
     database: DatabaseType.MongoDB,

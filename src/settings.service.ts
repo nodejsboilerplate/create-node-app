@@ -181,7 +181,7 @@ export class Settings implements SettingsType {
       typescript_need,
       unit_tester_need,
       email_templates_need,
-      selected_tables
+      selected_tables,
     } = this;
     return {
       app_name,

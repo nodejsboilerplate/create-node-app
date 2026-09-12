@@ -8,7 +8,7 @@ interface InsertOptions {
 
 interface BlockRange {
   matchStart: number;
-  openEnd: number;   // index right after the block's "{"
+  openEnd: number; // index right after the block's "{"
   closeStart: number; // index of the block's matching "}"
 }
 
@@ -82,7 +82,8 @@ export function insertInsideBlock(
     }
   }
 
-  const updated = prefix + buildHeader(options.label, indent) + indented + "\n" + after;
+  const updated =
+    prefix + buildHeader(options.label, indent) + indented + "\n" + after;
   fs.writeFileSync(filePath, updated, "utf8");
   console.log(`Inserted inside block in ${filePath}`);
 }
@@ -104,7 +105,8 @@ export function insertAfterBlock(
   const indent = " ".repeat(options.indentSize ?? 2);
   const indented = indentBlock(snippet, indent);
 
-  const updated = before + buildHeader(options.label, indent) + indented + "\n" + after;
+  const updated =
+    before + buildHeader(options.label, indent) + indented + "\n" + after;
   fs.writeFileSync(filePath, updated, "utf8");
   console.log(`Inserted after block in ${filePath}`);
 }
@@ -113,7 +115,9 @@ export function insertAfterBlock(
 export const anchors = {
   classBody: (name: string) => new RegExp(`class\\s+${name}[^{]*\\{`),
   functionBody: (name: string) =>
-    new RegExp(`(?:export\\s+)?(?:async\\s+)?function\\s+${name}\\s*\\([^)]*\\)\\s*(?::[^{]+)?\\{`),
+    new RegExp(
+      `(?:export\\s+)?(?:async\\s+)?function\\s+${name}\\s*\\([^)]*\\)\\s*(?::[^{]+)?\\{`
+    ),
   methodBody: (name: string) =>
     new RegExp(`(?:async\\s+)?${name}\\s*\\([^)]*\\)\\s*(?::[^{]+)?\\{`),
   objectLiteral: (varName: string) =>

@@ -1,1 +1,1 @@
-export * from "./repovariant"
+export * from "./repovariant";

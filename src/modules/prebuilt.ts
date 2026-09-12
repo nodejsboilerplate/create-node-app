@@ -1,7 +1,6 @@
 import { Settings, TableType } from "@/settings.service";
 import { confirm, checkbox } from "@inquirer/prompts";
 
-
 export const PrebuiltModulesSetup = async (settings: Settings) => {
   const get_prebuilt_auth_need = await confirm({
     message: "Include prebuilt auth module?",

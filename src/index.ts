@@ -171,13 +171,13 @@ async function run() {
   const targetDir = path.resolve(process.cwd(), "cloned");
 
   try {
-   
-let repo_clone_url: string = ""
+    let repo_clone_url: string = "";
     if (
       settings.repo_struct == RepoStructType.Monolith &&
       settings.app == AppType.Express
     ) {
-      repo_clone_url = "https://github.com/nodejsboilerplate/express-drizzle-postgres.git"
+      repo_clone_url =
+        "https://github.com/nodejsboilerplate/express-drizzle-postgres.git";
     }
 
     const clone_process = spawn("git", ["clone", repo_clone_url!, targetDir]);
@@ -209,7 +209,7 @@ let repo_clone_url: string = ""
 
         try {
           setupDatabaseModule(settings, targetDir);
-      setupServicesModule(settings, targetDir);
+          setupServicesModule(settings, targetDir);
           // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
           //   label: "Address",
           // });
