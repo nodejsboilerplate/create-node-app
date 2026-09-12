@@ -30,6 +30,7 @@
   ],
   "main": "./dist/index.js",
   "scripts": {
+    "start": "node ./dist/index.js",
     "build": "tsdown",
     "format": "prettier --write \"**/*.{ts,json}\""
   },

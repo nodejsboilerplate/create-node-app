@@ -121,14 +121,14 @@ if (get_setup_mode === "template") {
   /* --------------------------------- Database ------------------------------- */
   await DatabaseSetup(settings);
 
-  /* ------------------------------ Code quality ------------------------------ */
-  await CodeQualitySetup(settings);
-
   /* ------------------------------- Git tooling ------------------------------ */
   await GitTooling(settings);
 
   /* ----------------------------- Prebuilt modules ---------------------------- */
   await PrebuiltModulesSetup(settings);
+
+  /* ------------------------------ Code quality ------------------------------ */
+  await CodeQualitySetup(settings);
 
   /* ------------------------------- Code paradigm ----------------------------- */
 
