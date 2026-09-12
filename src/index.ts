@@ -1,16 +1,13 @@
 #!/usr/bin/env node
 
 import { spawn } from "child_process";
-import { Octokit } from "@octokit/core";
 import {
   AppType,
   RepoStructType,
   Settings,
-  type SettingsType,
 } from "./settings.service";
 import { TEMPLATES } from "./templates";
-import { select, input } from "@inquirer/prompts";
-import crypto from "node:crypto";
+import { select } from "@inquirer/prompts";
 import {
   AppNameAndRepo,
   AppTypeSetup,
@@ -25,9 +22,10 @@ import {
 import path from "node:path";
 import { setupDatabaseModule } from "./Setupdatabasemodule";
 import { setupServicesModule } from "./Setupservicesmodule";
+import { execSync } from "node:child_process";
+import { setAppPackageName } from "./setAppPackageName";
 
 const settings = new Settings();
-const octokit = new Octokit();
 
 const validateAppName = (value: string) => {
   const trimmed = value.trim();
@@ -159,13 +157,6 @@ Object.entries(finalSettings).map(([key, value]) => {
   }
 });
 
-const key = keyArr.join("");
-
-const repo_key = crypto.createHash("sha256").update(key).digest("hex");
-console.log(repo_key);
-
-let REPO_NAME: string;
-
 async function run() {
   const targetDir = path.resolve(process.cwd(), "cloned");
 
@@ -207,16 +198,17 @@ async function run() {
         console.log("Setting up files...");
 
         try {
-     setupDatabaseModule(settings, targetDir, {
-  baseFolder: "default",
-  driverName: settings.db_struct_manager, // "drizzle" | "prisma" | "mongoose" | ...
-  databaseName: settings.database,        // "postgres" | "mongodb"
-});
+          setAppPackageName(settings, targetDir);
+          setupDatabaseModule(settings, targetDir, {
+            baseFolder: "default",
+            driverName: settings.db_struct_manager, // "drizzle" | "prisma" | "mongoose" | ...
+            databaseName: settings.database, // "postgres" | "mongodb"
+          });
 
-setupServicesModule(settings, targetDir, {
-  baseFolder: "default",
-  subFolder: "services", // pass "" if a variant folder has no nested subfolder
-});
+          setupServicesModule(settings, targetDir, {
+            baseFolder: "default",
+            subFolder: "services", // pass "" if a variant folder has no nested subfolder
+          });
           // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
           //   label: "Address",
           // });
@@ -233,6 +225,8 @@ setupServicesModule(settings, targetDir, {
           //   ensureTrailingComma: true,
           // });
           console.log("Setup Done.");
+          console.log("Running pnpm format...");
+          execSync("pnpm format", { cwd: targetDir, stdio: "inherit" });
         } catch (err: any) {
           console.error(err.message);
           process.exit(1);
