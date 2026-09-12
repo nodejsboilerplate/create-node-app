@@ -2,7 +2,12 @@
 
 import { spawn } from "child_process";
 import { Octokit } from "@octokit/core";
-import { Settings, type SettingsType } from "./settings.service";
+import {
+  AppType,
+  RepoStructType,
+  Settings,
+  type SettingsType,
+} from "./settings.service";
 import { TEMPLATES } from "./templates";
 import { select, input } from "@inquirer/prompts";
 import crypto from "node:crypto";
@@ -19,6 +24,7 @@ import {
 } from "./modules";
 import path from "node:path";
 import { insertAfterBlock, insertInsideBlock } from "./blockInserter";
+import { setupDatabaseModule } from "./Setupdatabasemodule";
 
 const settings = new Settings();
 const octokit = new Octokit();
@@ -164,12 +170,16 @@ async function run() {
   const targetDir = path.resolve(process.cwd(), "cloned");
 
   try {
-    const { data } = await octokit.request("GET /repos/{owner}/{repo}", {
-      owner: "gitmahin",
-      repo: "crisis-desk-ai",
-    });
+   
+let repo_clone_url: string = ""
+    if (
+      settings.repo_struct == RepoStructType.Monolith &&
+      settings.app == AppType.Express
+    ) {
+      repo_clone_url = "https://github.com/nodejsboilerplate/express-drizzle-postgres.git"
+    }
 
-    const clone_process = spawn("git", ["clone", data.clone_url, targetDir]);
+    const clone_process = spawn("git", ["clone", repo_clone_url!, targetDir]);
 
     clone_process.stdout.setEncoding("utf8");
     clone_process.stderr.setEncoding("utf8");
@@ -197,6 +207,8 @@ async function run() {
         console.log("Setting up files...");
 
         try {
+          setupDatabaseModule(settings, targetDir);
+
           // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
           //   label: "Address",
           // });
@@ -212,7 +224,7 @@ async function run() {
           // insertInsideBlock(CONFIG_FILE, anchors.objectLiteral("config"), `newProp: "value",`, {
           //   ensureTrailingComma: true,
           // });
-          console.log("Done.");
+          console.log("Setup Done.");
         } catch (err: any) {
           console.error(err.message);
           process.exit(1);

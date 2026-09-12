@@ -1,5 +1,6 @@
-import type { Settings } from "@/settings.service";
-import { confirm } from "@inquirer/prompts";
+import { Settings, TableType } from "@/settings.service";
+import { confirm, checkbox } from "@inquirer/prompts";
+
 
 export const PrebuiltModulesSetup = async (settings: Settings) => {
   const get_prebuilt_auth_need = await confirm({
@@ -13,4 +14,15 @@ export const PrebuiltModulesSetup = async (settings: Settings) => {
     default: false,
   });
   settings.setPrebuiltUserNeed(get_prebuilt_user_need);
+
+  if (get_prebuilt_user_need) {
+    const selected_tables = await checkbox({
+      message: "Select tables",
+      choices: [
+        { name: "user_addresses", value: TableType.UserAddresses },
+        { name: "user_contacts", value: TableType.UserContacts },
+      ],
+    });
+    settings.setSelectedTables(selected_tables);
+  }
 };
