@@ -23,7 +23,6 @@ import {
   PrebuiltModulesSetup,
 } from "./modules";
 import path from "node:path";
-import { insertAfterBlock, insertInsideBlock } from "./blockInserter";
 import { setupDatabaseModule } from "./Setupdatabasemodule";
 import { setupServicesModule } from "./Setupservicesmodule";
 
@@ -208,8 +207,16 @@ async function run() {
         console.log("Setting up files...");
 
         try {
-          setupDatabaseModule(settings, targetDir);
-          setupServicesModule(settings, targetDir);
+     setupDatabaseModule(settings, targetDir, {
+  baseFolder: "default",
+  driverName: settings.db_struct_manager, // "drizzle" | "prisma" | "mongoose" | ...
+  databaseName: settings.database,        // "postgres" | "mongodb"
+});
+
+setupServicesModule(settings, targetDir, {
+  baseFolder: "default",
+  subFolder: "services", // pass "" if a variant folder has no nested subfolder
+});
           // insertInsideBlock(REPO_FILE, anchors.classBody("UserRepository"), addressCodeString, {
           //   label: "Address",
           // });

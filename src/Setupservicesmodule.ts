@@ -5,15 +5,24 @@ import { resolveVariantFolder, sparseCloneRepo } from "@/utils";
 
 const SERVICES_REPO_URL = "https://github.com/nodejsboilerplate/services.git";
 
-export function setupServicesModule(settings: Settings, targetDir: string) {
+interface SetupServicesOptions {
+  baseFolder?: string;   // e.g. "default"
+  subFolder?: string;   
+}
+
+export function setupServicesModule(
+  settings: Settings,
+  targetDir: string,
+  options: SetupServicesOptions = {}
+) {
+  const { baseFolder = "default", subFolder = "services" } = options;
+
   const destServicesDir = path.join(targetDir, "src", "services");
 
   if (!settings.prebuilt_user_need) {
     if (fs.existsSync(destServicesDir)) {
       fs.rmSync(destServicesDir, { recursive: true, force: true });
-      console.log(
-        "Prebuilt user module not selected — removed services folder."
-      );
+      console.log("Prebuilt user module not selected — removed services folder.");
     }
     return;
   }
@@ -21,15 +30,13 @@ export function setupServicesModule(settings: Settings, targetDir: string) {
   const variantFolder = resolveVariantFolder(settings);
 
   if (variantFolder === null) {
-    console.log(
-      "Full table set selected — using default cloned services setup, skipping override."
-    );
+    console.log("Full table set selected — using default cloned services setup, skipping override.");
     return;
   }
 
-  // Assumes each variant folder contains a "services" subfolder, mirroring
-  // the database repo's layout. Confirm against the actual repo structure.
-  const sparsePath = `default/${variantFolder}/services`;
+  const sparsePath = subFolder
+    ? `${baseFolder}/${variantFolder}/${subFolder}`
+    : `${baseFolder}/${variantFolder}`;
   const tempDir = path.join(targetDir, "__services-sparse-checkout__");
 
   console.log(`Fetching services variant: ${variantFolder}`);
@@ -51,7 +58,5 @@ export function setupServicesModule(settings: Settings, targetDir: string) {
   fs.cpSync(sparseServicesDir, destServicesDir, { recursive: true });
   fs.rmSync(tempDir, { recursive: true, force: true });
 
-  console.log(
-    `Services module (${variantFolder}) installed at ${destServicesDir}`
-  );
+  console.log(`Services module (${variantFolder}) installed at ${destServicesDir}`);
 }

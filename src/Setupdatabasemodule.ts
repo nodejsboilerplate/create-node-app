@@ -5,15 +5,29 @@ import { resolveVariantFolder, sparseCloneRepo } from "@/utils";
 
 const DB_REPO_URL = "https://github.com/nodejsboilerplate/database";
 
-export function setupDatabaseModule(settings: Settings, targetDir: string) {
+interface SetupDatabaseOptions {
+  baseFolder?: string;   // e.g. "default"
+  driverName?: string;   // e.g. "drizzle" | "prisma" | "mongoose"
+  databaseName?: string; // e.g. "postgres" | "mongodb"
+}
+
+export function setupDatabaseModule(
+  settings: Settings,
+  targetDir: string,
+  options: SetupDatabaseOptions = {}
+) {
+  const {
+    baseFolder = "default",
+    driverName = "drizzle",
+    databaseName = "postgres",
+  } = options;
+
   const destDatabaseDir = path.join(targetDir, "src", "database");
 
   if (!settings.prebuilt_user_need) {
     if (fs.existsSync(destDatabaseDir)) {
       fs.rmSync(destDatabaseDir, { recursive: true, force: true });
-      console.log(
-        "Prebuilt user module not selected — removed database folder."
-      );
+      console.log("Prebuilt user module not selected — removed database folder.");
     }
     return;
   }
@@ -21,16 +35,14 @@ export function setupDatabaseModule(settings: Settings, targetDir: string) {
   const variantFolder = resolveVariantFolder(settings);
 
   if (variantFolder === null) {
-    console.log(
-      "Full table set selected — using default cloned database setup, skipping override."
-    );
+    console.log("Full table set selected — using default cloned database setup, skipping override.");
     return;
   }
 
-  const sparsePath = `default/drizzle/postgres/${variantFolder}/database`;
+  const sparsePath = `${baseFolder}/${driverName}/${databaseName}/${variantFolder}/database`;
   const tempDir = path.join(targetDir, "__db-sparse-checkout__");
 
-  console.log(`Fetching database variant: ${variantFolder}`);
+  console.log(`Fetching database variant: ${variantFolder} (${driverName}/${databaseName})`);
 
   sparseCloneRepo(DB_REPO_URL, sparsePath, tempDir);
 
@@ -49,7 +61,5 @@ export function setupDatabaseModule(settings: Settings, targetDir: string) {
   fs.cpSync(sparseDatabaseDir, destDatabaseDir, { recursive: true });
   fs.rmSync(tempDir, { recursive: true, force: true });
 
-  console.log(
-    `Database module (${variantFolder}) installed at ${destDatabaseDir}`
-  );
+  console.log(`Database module (${variantFolder}) installed at ${destDatabaseDir}`);
 }
