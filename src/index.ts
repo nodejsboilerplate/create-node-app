@@ -4,6 +4,8 @@ import { spawn } from "child_process";
 import { TEMPLATES } from "./templates";
 import { select } from "@inquirer/prompts";
 import { AppName } from "./modules";
+import fs from "fs";
+import path from "path";
 import { execSync } from "node:child_process";
 import { setAppPackageName } from "./setAppPackageName";
 
@@ -131,9 +133,15 @@ async function run() {
         try {
           setAppPackageName(app_name, targetDir);
 
+          fs.rmSync(path.join(targetDir, ".git"), {
+            recursive: true,
+            force: true,
+          });
+
           console.log("Setup Done.");
           console.log("Running pnpm format...");
           execSync("pnpm format", { cwd: targetDir, stdio: "inherit" });
+          execSync("pnpm build", { cwd: targetDir, stdio: "inherit" });
         } catch (err: any) {
           console.error(err.message);
           process.exit(1);
