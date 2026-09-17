@@ -1,6 +1,6 @@
 {
   "name": "@npmmahin/create-node-app",
-  "version": "1.1.0",
+  "version": "26.0.0",
   "description": "Interactive CLI for scaffolding production-ready Node.js backend applications with Express, Next.js, React, and TanStack, featuring fully configurable modules and project structure.",
   "keywords": [
     "cli",
