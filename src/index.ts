@@ -140,7 +140,34 @@ async function run() {
 
           console.log("Setup Done.");
           console.log("Building necessary files to continue...");
-          execSync("pnpm build", { cwd: targetDir, stdio: "inherit" });
+
+          if (chosen_template.type == "ExpressDrizzlePostgres") {
+            execSync("pnpm --filter emails run build", {
+              cwd: targetDir,
+              stdio: "inherit",
+            });
+          }
+
+          if (chosen_template.type == "ExpressDrizzlePostgresInversify") {
+            execSync("pnpm --filter emails run build", {
+              cwd: targetDir,
+              stdio: "inherit",
+            });
+          }
+
+          if (chosen_template.type == "ExpressDrizzlePostgresMicroService") {
+            execSync("pnpm --filter './packages/*' run build", {
+              cwd: targetDir,
+              stdio: "inherit",
+            });
+          }
+
+          if (chosen_template.type == "ExpressDrizzlePostgresMonorepo") {
+            execSync("pnpm --filter './packages/*' run build", {
+              cwd: targetDir,
+              stdio: "inherit",
+            });
+          }
         } catch (err: any) {
           console.error(err.message);
           process.exit(1);
