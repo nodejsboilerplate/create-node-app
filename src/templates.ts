@@ -1,20 +1,18 @@
-import {
-  AppType,
-  CodeParadigmType,
-  DatabaseType,
-  DbStructManagerType,
-  DependencyInjectionType,
-  RepoStructType,
-  type TemplateSettings,
-} from "./settings.service";
+export type TemplateType =
+  | "ExpressDrizzlePostgres"
+  | "ExpressDrizzlePostgresInversify"
+  | "ExpressDrizzlePostgresMonorepo"
+  | "MCP"
+  | "ExpressDrizzlePostgresMicroService";
 
 export interface Template {
   id: string;
   name: string;
   description: string;
   highlights: string[];
-  settings: TemplateSettings;
+  type: TemplateType;
 }
+
 const expressDrizzlePostgres: Template = {
   id: "express-drizzle-postgres",
   name: "Express + Drizzle + Postgres",
@@ -23,162 +21,75 @@ const expressDrizzlePostgres: Template = {
     "Express + Postgres",
     "Drizzle ORM",
     "Auth & user modules included",
+    "Grafana monitoring",
   ],
-  settings: {
-    app: AppType.Express,
-    database: DatabaseType.Postgres,
-    db_struct_manager: DbStructManagerType.Drizzle,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: true,
-    prebuilt_auth_need: true,
-    prebuilt_user_need: true,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.OOP,
-    dependency_injection_type: DependencyInjectionType.CompositionRoot,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: true,
-    email_templates_need: false,
-  },
+  type: "ExpressDrizzlePostgres",
 };
 
-const expressPrismaPostgres: Template = {
-  id: "express-prisma-postgres",
-  name: "Express + Prisma + Postgres",
-  description: "Express monolith with Postgres via Prisma ORM.",
+const expressDrizzlePostgresInversify: Template = {
+  id: "express-drizzle-postgres-inversify",
+  name: "Express + Drizzle + Postgres (Inversify)",
+  description:
+    "Express monolith with Postgres via Drizzle ORM, using Inversify for dependency injection.",
   highlights: [
     "Express + Postgres",
-    "Prisma ORM",
+    "Drizzle ORM",
+    "Inversify dependency injection",
     "Auth & user modules included",
+    "Grafana monitoring",
   ],
-  settings: {
-    app: AppType.Express,
-    database: DatabaseType.Postgres,
-    db_struct_manager: DbStructManagerType.Prisma,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: true,
-    prebuilt_auth_need: true,
-    prebuilt_user_need: true,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.OOP,
-    dependency_injection_type: DependencyInjectionType.CompositionRoot,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: true,
-    email_templates_need: false,
-  },
+  type: "ExpressDrizzlePostgresInversify",
 };
 
-const expressServerlessPrismaPostgres: Template = {
-  id: "express-serverless-prisma-postgres",
-  name: "Serverless Express + Prisma + Postgres",
-  description: "Express-serverless deployment with Postgres via Prisma.",
-  highlights: ["Deploys as serverless functions", "Postgres via Prisma"],
-  settings: {
-    app: AppType.ExpressServerless,
-    database: DatabaseType.Postgres,
-    db_struct_manager: DbStructManagerType.Prisma,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: false,
-    prebuilt_auth_need: false,
-    prebuilt_user_need: false,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.FP,
-    dependency_injection_type: DependencyInjectionType.None,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: false,
-    email_templates_need: false,
-  },
-};
-
-const expressServerlessDrizzlePostgres: Template = {
-  id: "express-serverless-drizzle-postgres",
-  name: "Serverless Express + Drizzle + Postgres",
-  description: "Express-serverless deployment with Postgres via Drizzle.",
-  highlights: ["Deploys as serverless functions", "Postgres via Drizzle"],
-  settings: {
-    app: AppType.ExpressServerless,
-    database: DatabaseType.Postgres,
-    db_struct_manager: DbStructManagerType.Drizzle,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: false,
-    prebuilt_auth_need: false,
-    prebuilt_user_need: false,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.FP,
-    dependency_injection_type: DependencyInjectionType.None,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: false,
-    email_templates_need: false,
-  },
-};
-
-const expressServerlessMongo: Template = {
-  id: "express-serverless-mongo",
-  name: "Serverless Express + MongoDB",
-  description: "Express-serverless deployment with raw MongoDB driver.",
+const expressDrizzlePostgresMonorepo: Template = {
+  id: "express-drizzle-postgres-monorepo",
+  name: "Express + Drizzle + Postgres (Monorepo)",
+  description: "Express + Postgres via Drizzle ORM, structured as a monorepo.",
   highlights: [
-    "Deploys as serverless functions",
-    "Raw MongoDB driver (no ODM)",
-  ],
-  settings: {
-    app: AppType.ExpressServerless,
-    database: DatabaseType.MongoDB,
-    db_struct_manager: DbStructManagerType.MongoDB,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: false,
-    prebuilt_auth_need: false,
-    prebuilt_user_need: false,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.FP,
-    dependency_injection_type: DependencyInjectionType.None,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: false,
-    email_templates_need: false,
-  },
-};
-
-const expressMongo: Template = {
-  id: "express-mongo",
-  name: "Express + MongoDB",
-  description: "Express monolith with MongoDB via Mongoose.",
-  highlights: [
-    "Express + MongoDB",
-    "Mongoose ODM",
+    "Express + Postgres",
+    "Drizzle ORM",
+    "Monorepo structure",
     "Auth & user modules included",
+    "Grafana monitoring",
   ],
-  settings: {
-    app: AppType.Express,
-    database: DatabaseType.MongoDB,
-    db_struct_manager: DbStructManagerType.Mongoose,
-    repo_struct: RepoStructType.Monolith,
-    monorepo_provider: null,
-    husky_need: true,
-    prebuilt_auth_need: true,
-    prebuilt_user_need: true,
-    monitoring_need: false,
-    code_paradigm: CodeParadigmType.OOP,
-    dependency_injection_type: DependencyInjectionType.CompositionRoot,
-    empty_business_logic: false,
-    typescript_need: true,
-    unit_tester_need: true,
-    email_templates_need: false,
-  },
+  type: "ExpressDrizzlePostgresMonorepo",
+};
+
+const mcp: Template = {
+  id: "mcp",
+  name: "MCP Server",
+  description:
+    "Starter template for building an MCP (Model Context Protocol) server",
+  highlights: [
+    "Custom tool & resource responses",
+    "Exception handler included",
+    "Dockerfile included",
+    "TypeScript",
+    "Streamable HTTP",
+  ],
+  type: "MCP",
+};
+
+const expressDrizzlePostgresMicroService: Template = {
+  id: "express-drizzle-postgres-microservice",
+  name: "Express + Drizzle + Postgres (Microservice)",
+  description:
+    "Express + Postgres via Drizzle ORM, structured as microservices with user and message services to start.",
+  highlights: [
+    "Express + Postgres",
+    "Drizzle ORM",
+    "User & message services included",
+    "RabbitMQ cluster messaging",
+    "Kubernetes deployment",
+    "Grafana monitoring",
+  ],
+  type: "ExpressDrizzlePostgresMicroService",
 };
 
 export const TEMPLATES: Template[] = [
   expressDrizzlePostgres,
-  expressPrismaPostgres,
-  expressServerlessPrismaPostgres,
-  expressServerlessDrizzlePostgres,
-  expressServerlessMongo,
-  expressMongo,
+  expressDrizzlePostgresInversify,
+  expressDrizzlePostgresMonorepo,
+  mcp,
+  expressDrizzlePostgresMicroService,
 ];
