@@ -57,10 +57,15 @@ const printTemplateHighlights = (name: string, highlights: string[]) => {
 /* ------------------------------------------------------------------------ */
 const chosen_template_id = await select({
   message: "Select a template:",
+
   choices: TEMPLATES.map((template) => ({
     name: template.name,
     value: template.type,
     description: template.description,
+    disabled:
+      template.type === "ExpressDrizzlePostgresMicroService"
+        ? "(coming soon)"
+        : false,
   })),
 });
 
