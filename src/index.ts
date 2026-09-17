@@ -110,7 +110,7 @@ async function run() {
     clone_process.stdout.setEncoding("utf8");
     clone_process.stderr.setEncoding("utf8");
     clone_process.stdout.on("data", (d) => console.log("clone:", d));
-    clone_process.stderr.on("data", (d) => console.log("clone err:", d));
+    clone_process.stderr.on("data", (d) => console.log("clone:", d));
 
     clone_process.on("close", (code) => {
       if (code !== 0) {
@@ -139,8 +139,7 @@ async function run() {
           });
 
           console.log("Setup Done.");
-          console.log("Running pnpm format...");
-          execSync("pnpm format", { cwd: targetDir, stdio: "inherit" });
+          console.log("Building necessary files to continue...");
           execSync("pnpm build", { cwd: targetDir, stdio: "inherit" });
         } catch (err: any) {
           console.error(err.message);
