@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { spawn } from "child_process";
 import { TEMPLATES } from "./templates";
 import { select } from "@inquirer/prompts";
