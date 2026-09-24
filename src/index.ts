@@ -1,50 +1,9 @@
-#!/usr/bin/env node
-
 import { spawn } from "child_process";
 import { TEMPLATES } from "./templates";
 import { select } from "@inquirer/prompts";
-import { AppName } from "./modules";
 import fs from "fs";
 import path from "path";
 import { execSync } from "node:child_process";
-import { setAppPackageName } from "./setAppPackageName";
-
-const validateAppName = (value: string) => {
-  const trimmed = value.trim();
-
-  if (trimmed.length === 0) {
-    return "Name cannot be empty";
-  }
-
-  // Disallow any whitespace (spaces, tabs, etc.) anywhere in the name
-  if (/\s/.test(trimmed)) {
-    return "Name cannot contain spaces";
-  }
-
-  // Disallow reserved/invalid filesystem characters
-  const invalidChars = /[<>:"/\\|?*\x00-\x1F]/;
-  if (invalidChars.test(trimmed)) {
-    return 'Name contains invalid characters (< > : " / \\ | ? *)';
-  }
-
-  // Disallow leading/trailing dots
-  if (/^\.|\.$/.test(trimmed)) {
-    return "Name cannot start or end with a dot";
-  }
-
-  // Disallow reserved Windows names
-  const reservedNames = /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])$/i;
-  if (reservedNames.test(trimmed)) {
-    return "This name is reserved by the operating system";
-  }
-
-  // Enforce reasonable length
-  if (trimmed.length > 214) {
-    return "Name is too long";
-  }
-
-  return true;
-};
 
 const printTemplateHighlights = (name: string, highlights: string[]) => {
   console.log(`\n✔ ${name}\n`);
@@ -73,8 +32,6 @@ const chosen_template_id = await select({
 
 const chosen_template = TEMPLATES.find((t) => t.type === chosen_template_id)!;
 
-const app_name = await AppName(validateAppName);
-
 printTemplateHighlights(chosen_template.name, chosen_template.highlights);
 
 async function run() {
@@ -82,6 +39,7 @@ async function run() {
 
   try {
     let repo_clone_url: string = "";
+
     if (chosen_template.type == "ExpressDrizzlePostgres") {
       repo_clone_url =
         "https://github.com/nodejsboilerplate/express-drizzle-postgres.git";
@@ -92,17 +50,28 @@ async function run() {
         "https://github.com/nodejsboilerplate/express-drizzle-postgres-inversify.git";
     }
 
-    if (chosen_template.type == "ExpressDrizzlePostgresMicroService") {
-      repo_clone_url =
-        "https://github.com/nodejsboilerplate/express-drizzle-postgres-microservice.git";
-    }
-
     if (chosen_template.type == "ExpressDrizzlePostgresMonorepo") {
       repo_clone_url =
         "https://github.com/nodejsboilerplate/express-drizzle-postgres-monorepo.git";
     }
+
     if (chosen_template.type == "MCP") {
       repo_clone_url = "https://github.com/nodejsboilerplate/mcp.git";
+    }
+
+    if (chosen_template.type == "ExpressDrizzlePostgresEmpty") {
+      repo_clone_url =
+        "https://github.com/nodejsboilerplate/express-drizzle-postgres-empty.git";
+    }
+
+    if (chosen_template.type == "ExpressDrizzlePostgresInversifyEmpty") {
+      repo_clone_url =
+        "https://github.com/nodejsboilerplate/express-drizzle-postgres-inversify-empty.git";
+    }
+
+    if (chosen_template.type == "ExpressDrizzlePostgresMonorepoEmpty") {
+      repo_clone_url =
+        "https://github.com/nodejsboilerplate/express-drizzle-postgres-monorepo-empty.git";
     }
 
     const clone_process = spawn("git", ["clone", repo_clone_url!, targetDir]);
@@ -131,7 +100,7 @@ async function run() {
         }
 
         try {
-          setAppPackageName(app_name, targetDir);
+
 
           fs.rmSync(path.join(targetDir, ".git"), {
             recursive: true,
