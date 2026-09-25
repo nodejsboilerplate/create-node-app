@@ -102,17 +102,15 @@ async function run() {
         }
 
         try {
-
-
           fs.rmSync(path.join(targetDir, ".git"), {
             recursive: true,
             force: true,
           });
 
           console.log("Setup Done.");
-          console.log("Building necessary files to continue...");
 
           if (chosen_template.type == "ExpressDrizzlePostgres") {
+            console.log("Building necessary files to continue...");
             execSync("pnpm --filter emails run build", {
               cwd: targetDir,
               stdio: "inherit",
@@ -120,20 +118,18 @@ async function run() {
           }
 
           if (chosen_template.type == "ExpressDrizzlePostgresInversify") {
+            console.log("Building necessary files to continue...");
             execSync("pnpm --filter emails run build", {
               cwd: targetDir,
               stdio: "inherit",
             });
           }
 
-          if (chosen_template.type == "ExpressDrizzlePostgresMicroService") {
-            execSync("pnpm --filter './packages/*' run build", {
-              cwd: targetDir,
-              stdio: "inherit",
-            });
-          }
-
-          if (chosen_template.type == "ExpressDrizzlePostgresMonorepo") {
+          if (
+            chosen_template.type == "ExpressDrizzlePostgresMonorepo" ||
+            chosen_template.type == "ExpressDrizzlePostgresMonorepoEmpty"
+          ) {
+            console.log("Building necessary files to continue...");
             execSync("pnpm --filter './packages/*' run build", {
               cwd: targetDir,
               stdio: "inherit",
