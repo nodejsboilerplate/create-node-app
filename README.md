@@ -12,6 +12,10 @@
 ## Getting Started
 ```bash
 npx @npmmahin/create-node-app@latest
+cp .env.example .env
+cp .env.example .env.production.local
+docker compose up -d
+pnpm dev
 ```
 
 > [!NOTE]
