@@ -37,7 +37,7 @@ const chosen_template = TEMPLATES.find((t) => t.type === chosen_template_id)!;
 printTemplateHighlights(chosen_template.name, chosen_template.highlights);
 
 async function run() {
-  const targetDir = process.cwd();
+  const targetDir = process.cwd() + "/cloned";
 
   try {
     let repo_clone_url: string = "";
@@ -90,7 +90,7 @@ async function run() {
       }
 
       console.log("Installing dependencies...");
-      const install_deps = spawn("pnpm", ["i"], { cwd: targetDir });
+      const install_deps = spawn("pnpm", ["i"], { cwd: targetDir, shell: true });
 
       install_deps.stdout.on("data", (d) => console.log(d.toString()));
       install_deps.stderr.on("data", (d) => console.error(d.toString()));
